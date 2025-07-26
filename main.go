@@ -40,6 +40,7 @@ func main() {
 	c.register("login", handleLogin)
 	c.register("register", handleRegister)
 	c.register("reset", handleReset)
+	c.register("users", handleUsers)
 	err = c.run(&s, cmd)
 	if err != nil {
 		fmt.Printf("error running command: %v\n", err)
