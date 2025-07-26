@@ -1,11 +1,14 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"os"
 
+	_ "github.com/lib/pq"
 	"github.com/pbojar/gator/internal/config"
+	"github.com/pbojar/gator/internal/database"
 )
 
 func main() {
@@ -21,12 +24,21 @@ func main() {
 	if err != nil {
 		fmt.Printf("error reading config: %v\n", err)
 	}
+	db, err := sql.Open("postgres", *cfg.DBURL)
+	if err != nil {
+		fmt.Printf("error opening db: %v\n", err)
+	}
+	dbQueries := database.New(db)
 
-	s := state{&cfg}
+	s := state{
+		db:  dbQueries,
+		cfg: &cfg,
+	}
 	c := commands{
 		commands: make(map[string]func(*state, command) error),
 	}
 	c.register("login", handleLogin)
+	c.register("register", handleRegister)
 	err = c.run(&s, cmd)
 	if err != nil {
 		fmt.Printf("error running command: %v\n", err)
