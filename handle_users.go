@@ -40,8 +40,8 @@ func handleRegisterUser(s *state, cmd command) error {
 	}
 	params := database.CreateUserParams{
 		ID:        uuid.New(),
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
+		CreatedAt: time.Now().UTC().UTC(),
+		UpdatedAt: time.Now().UTC().UTC(),
 		Name:      username,
 	}
 	user, err := s.db.CreateUser(context.Background(), params)

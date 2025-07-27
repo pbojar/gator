@@ -2,7 +2,6 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"os"
 
@@ -43,17 +42,12 @@ func main() {
 	c.register("users", handleListUsers)
 	c.register("agg", handleAgg)
 	c.register("addfeed", handleAddfeed)
+	c.register("feeds", handleListFeeds)
+	c.register("follow", handleFollow)
+	c.register("following", handleFollowing)
 	err = c.run(&s, cmd)
 	if err != nil {
 		fmt.Printf("error running command: %v\n", err)
 		os.Exit(1)
 	}
-
-	cfg, err = config.Read()
-	if err != nil {
-		fmt.Printf("error reading config: %v\n", err)
-	}
-
-	cfgMarshalled, _ := json.MarshalIndent(cfg, "", "  ")
-	fmt.Printf("Config contents:\n%s\n", string(cfgMarshalled))
 }
