@@ -27,7 +27,7 @@ func handleRegister(s *state, cmd command) error {
 		UpdatedAt: time.Now(),
 		Name:      username,
 	}
-	_, err = s.db.CreateUser(context.Background(), params)
+	user, err := s.db.CreateUser(context.Background(), params)
 	if err != nil {
 		return fmt.Errorf("error - database.CreateUser: %v", err)
 	}
@@ -36,9 +36,9 @@ func handleRegister(s *state, cmd command) error {
 		return fmt.Errorf("error - SetUser: %v", err)
 	}
 	fmt.Printf("User '%s' registered!\n", username)
-	fmt.Printf("\tuuid - %s\n", params.ID.String())
-	fmt.Printf("\tt_cr - %s\n", params.CreatedAt.String())
-	fmt.Printf("\tt_up - %s\n", params.UpdatedAt.String())
-	fmt.Printf("\tname - %s\n", params.Name)
+	fmt.Printf("\tuuid - %s\n", user.ID.String())
+	fmt.Printf("\tt_cr - %s\n", user.CreatedAt.String())
+	fmt.Printf("\tt_up - %s\n", user.UpdatedAt.String())
+	fmt.Printf("\tname - %s\n", user.Name)
 	return nil
 }
