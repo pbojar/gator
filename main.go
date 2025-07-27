@@ -38,9 +38,9 @@ func main() {
 		commands: make(map[string]func(*state, command) error),
 	}
 	c.register("login", handleLogin)
-	c.register("register", handleRegister)
+	c.register("register", handleRegisterUser)
 	c.register("reset", handleReset)
-	c.register("users", handleUsers)
+	c.register("users", handleListUsers)
 	c.register("agg", handleAgg)
 	c.register("addfeed", handleAddfeed)
 	err = c.run(&s, cmd)
