@@ -41,9 +41,9 @@ func main() {
 	c.register("reset", handleReset)
 	c.register("users", handleListUsers)
 	c.register("agg", handleAgg)
-	c.register("addfeed", handleAddfeed)
+	c.register("addfeed", loggedIn(handleAddfeed))
 	c.register("feeds", handleListFeeds)
-	c.register("follow", handleFollow)
+	c.register("follow", loggedIn(handleFollow))
 	c.register("following", handleFollowing)
 	err = c.run(&s, cmd)
 	if err != nil {

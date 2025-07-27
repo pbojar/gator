@@ -9,13 +9,7 @@ import (
 	"github.com/pbojar/gator/internal/database"
 )
 
-func handleFollow(s *state, cmd command) error {
-	// Get current user
-	currentUser, err := s.db.GetUser(context.Background(), *s.cfg.CurrentUserName)
-	if err != nil {
-		return fmt.Errorf("couldn't get current user: %w", err)
-	}
-
+func handleFollow(s *state, cmd command, user database.User) error {
 	// Args check
 	if len(cmd.args) != 1 {
 		return fmt.Errorf("usage: %s <feed_url>", cmd.name)
@@ -33,7 +27,7 @@ func handleFollow(s *state, cmd command) error {
 		ID:        uuid.New(),
 		CreatedAt: time.Now().UTC(),
 		UpdatedAt: time.Now().UTC(),
-		UserID:    currentUser.ID,
+		UserID:    user.ID,
 		FeedID:    feed.ID,
 	}
 	feedFollow, err := s.db.CreateFeedFollow(context.Background(), params)
