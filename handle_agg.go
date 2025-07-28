@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"time"
+
+	"github.com/google/uuid"
+	"github.com/pbojar/gator/internal/database"
 )
 
 func handleAgg(s *state, cmd command) error {
@@ -19,7 +23,10 @@ func handleAgg(s *state, cmd command) error {
 
 	ticker := time.NewTicker(timeBetweenReqs)
 	for ; ; <-ticker.C {
-		scrapeFeeds(s)
+		err := scrapeFeeds(s)
+		if err != nil {
+			return fmt.Errorf("couldn't scrape feed: %w", err)
+		}
 	}
 }
 
@@ -42,23 +49,34 @@ func scrapeFeeds(s *state) error {
 	// Fetch feed
 	rssFeed, err := fetchFeed(context.Background(), feedToFetch.Url)
 	if err != nil {
-		return fmt.Errorf("error - fetchFeed: %v", err)
+		return fmt.Errorf("couldn't fetch feed: %w", err)
 	}
 
-	printRSSFeed(rssFeed)
+	// Add items to posts
+	for _, item := range rssFeed.Channel.Item {
+		_, err := s.db.GetPostByURL(context.Background(), item.Link)
+		if err == nil {
+			continue
+		}
+		params := database.CreatePostParams{
+			ID:          uuid.New(),
+			CreatedAt:   time.Now().UTC(),
+			UpdatedAt:   time.Now().UTC(),
+			Title:       item.Title,
+			Url:         item.Link,
+			Description: item.Description,
+			FeedID:      feedToFetch.ID,
+		}
+		loc, _ := time.LoadLocation("UTC")
+		pubDate, err := time.ParseInLocation(time.RFC1123Z, item.PubDate, loc)
+		if err == nil {
+			params.PublishedAt = sql.NullTime{Valid: true, Time: pubDate}
+		}
+		_, err = s.db.CreatePost(context.Background(), params)
+		if err != nil {
+			return fmt.Errorf("couldn't create post: %w", err)
+		}
+	}
+
 	return nil
-}
-
-func printRSSFeed(feed *RSSFeed) {
-	fmt.Printf("Title: %s\n", feed.Channel.Title)
-	fmt.Printf("Link:  %s\n", feed.Channel.Link)
-	fmt.Printf("Desc:  %s\n", feed.Channel.Description)
-	fmt.Printf("Items:\n\n")
-	for _, item := range feed.Channel.Item {
-		fmt.Printf("  * Title: %s\n", item.Title)
-		fmt.Printf("  * Link:  %s\n", item.Link)
-		fmt.Printf("  * PubD:  %s\n", item.PubDate)
-		fmt.Printf("  * Desc:  %s\n", item.Description)
-		fmt.Printf("\n==============================\n\n")
-	}
 }

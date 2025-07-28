@@ -46,6 +46,7 @@ func main() {
 	c.register("follow", loggedIn(handleFollow))
 	c.register("following", handleFollowing)
 	c.register("unfollow", loggedIn(handleUnfollow))
+	c.register("browse", loggedIn(handleBrowse))
 	err = c.run(&s, cmd)
 	if err != nil {
 		fmt.Printf("error running command: %v\n", err)
